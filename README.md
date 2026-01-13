@@ -1,5 +1,27 @@
 ![OpenWrt logo](include/logo.png)
 
+## OpenWrt with TROPIC01 Support
+
+This fork of OpenWrt adds support for the **TROPIC01** secure element, enabling
+secure storage and hardware-based cryptographic operations on OpenWrt-compatible
+devices. The TROPIC01 is an auditable secure element / hardware root-of-trust
+designed by Tropic Square that provides:
+
+- Hardware-accelerated cryptographic operations
+- True random number generation (TRNG)
+- Secure data, credentials and keys storage
+- Cryptographic-based identification and authentication of embedded devices
+
+This fork includes the **libtropic** library and **lt-util** command-line utility,
+allowing OpenWrt devices to leverage TROPIC01's secure element capabilities through
+both SPI (via MikroBus on OpenWrt One) and USB dongle interfaces.
+
+**Use cases:** Secure IoT deployments and supply chains protection, hardware-backed
+data signing, secure boot and secure update, cryptographic keys management,
+and applications requiring certified random number generation.
+
+---
+
 OpenWrt Project is a Linux operating system targeting embedded devices. Instead
 of trying to create a single, static firmware, OpenWrt provides a fully
 writable filesystem with package management. This frees you from the
@@ -61,6 +83,43 @@ make4.1+ perl python3.7+ rsync subversion unzip which
 4. Run `make` to build your firmware. This will download all sources, build the
    cross-compile toolchain and then cross-compile the GNU/Linux kernel & all chosen
    applications for your target system.
+
+### Enabling MicroE TROPIC01 Support for OpenWrt One
+
+The OpenWrt One router supports the MicroE TROPIC01 board. To enable this support in your build:
+
+1. Run `make menuconfig` to open the configuration menu
+
+2. Navigate to **Target System** and select your appropriate target (e.g., MediaTek ARM)
+
+3. Navigate to **Subtarget** and select **Filogic 8x0 (MT798x)**
+
+4. Navigate to **Target Profile** and select **OpenWrt One**
+
+5. Navigate to **Kernel modules** → **SPI Support** and enable:
+   - `kmod-spi-dev` - User mode SPI device driver (required for TROPIC01 SPI communication)
+
+6. (Optional) For USB dongle with TROPIC01, navigate to **Kernel modules** → **USB Support** and enable:
+   - `kmod-usb-acm` - USB Abstract Control Model (CDC ACM) support for TROPIC01 USB dongle
+
+7. Navigate to **Libraries** and enable:
+   - `libtropic` - MicroE TROPIC01 library for secure element communication
+
+8. Navigate to **Utilities** and enable:
+   - `lt-util` - TROPIC01 utility for cryptographic operations and device management
+
+9.  (Optional) For development and debugging, navigate to **Utilities** and enable:
+   - `spidev-test` - SPI device testing utility
+
+10. Save your configuration and exit
+
+11. Build the firmware with `make`
+
+The libtropic and lt-util packages provide userspace tools to interface with the
+TROPIC01 secure element for cryptographic operations, key management, and random number
+generation. The kmod-spi-dev module enables userspace access to the SPI bus for
+communication with TROPIC01 via the MikroBus connector on OpenWrt One. For USB dongles,
+the kmod-usb-acm module provides the necessary USB CDC ACM driver support.
 
 ### Related Repositories
 
